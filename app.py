@@ -2,15 +2,12 @@
 
 from __future__ import annotations
 
-import pandas as pd
 import streamlit as st
 
 from src.inference import (
     categorical_options,
-    expected_columns,
     load_artifacts,
     predict_connection,
-    predict_connections,
 )
 
 
@@ -30,7 +27,13 @@ st.markdown(
         padding: 2.2rem; border-radius: 24px; color: var(--navy);
         background: linear-gradient(135deg, #fff 0%, #fff1ee 68%, #dff7f5 100%);
         border: 1px solid #ffd6d9; box-shadow: 0 18px 50px rgba(7, 16, 68, .08); margin-bottom: 1.5rem;
+        position: relative; overflow: hidden;
     }
+    .hero > *:not(.shape) {position:relative; z-index:2;}
+    .shape {position:absolute; z-index:1; opacity:.85; pointer-events:none;}
+    .shape-circle {width:150px; height:150px; border-radius:50%; background:#ffd9dd; right:65px; top:-45px;}
+    .shape-ring {width:90px; height:90px; border:14px solid #28aaa9; border-radius:50%; right:20px; bottom:-38px; opacity:.35;}
+    .shape-dots {right:185px; bottom:15px; color:#ff5364; font-size:32px; letter-spacing:8px; opacity:.5;}
     .hero h1 {font-size: 2.45rem; margin: 0 0 .55rem 0;}
     .hero p {font-size: 1.08rem; max-width: 760px; margin: 0; opacity: .92;}
     .hero .accent {color:var(--coral);}
@@ -70,47 +73,6 @@ def empty_connection() -> dict[str, object]:
     return row
 
 
-def normal_web_example() -> dict[str, object]:
-    row = empty_connection()
-    row.update(
-        src_bytes=181,
-        dst_bytes=5450,
-        logged_in=1,
-        count=8,
-        srv_count=8,
-        same_srv_rate=1,
-        dst_host_count=9,
-        dst_host_srv_count=9,
-        dst_host_same_srv_rate=1,
-        dst_host_same_src_port_rate=0.11,
-    )
-    return row
-
-
-def suspicious_example() -> dict[str, object]:
-    row = empty_connection()
-    row.update(
-        protocol_type="icmp",
-        service="ecr_i",
-        src_bytes=1032,
-        count=511,
-        srv_count=511,
-        same_srv_rate=1,
-        dst_host_count=255,
-        dst_host_srv_count=255,
-        dst_host_same_srv_rate=1,
-        dst_host_same_src_port_rate=1,
-    )
-    return row
-
-
-PRESETS = {
-    "Normal web browsing": normal_web_example,
-    "Suspicious high-volume traffic": suspicious_example,
-    "Create a custom connection": empty_connection,
-}
-
-
 FRIENDLY_LABELS = {
     "duration": "Connection duration (seconds)",
     "src_bytes": "Data sent by the visitor (bytes)",
@@ -124,6 +86,9 @@ FRIENDLY_LABELS = {
 st.markdown(
     """
 <section class="hero">
+  <div class="shape shape-circle"></div>
+  <div class="shape shape-ring"></div>
+  <div class="shape shape-dots">•••</div>
   <div class="eyebrow">ANOMALY DETECTION SYSTEM</div>
   <h1>Learning <span class="accent">normal</span> to detect the abnormal.</h1>
   <p>A beginner-friendly demonstration of network intrusion detection with a
@@ -149,60 +114,20 @@ intro_columns[2].markdown(
 )
 
 st.write("")
-detector_tab, batch_tab, learn_tab = st.tabs(
-    ["Try the detector", "Analyze a CSV", "Learn how it works"]
-)
+detector_tab, learn_tab = st.tabs(["Try the detector", "Learn how it works"])
 
 with detector_tab:
-    st.subheader("Live presentation demo")
-    st.write("Choose a scenario, explain the values, and press the button. The form is filled for you so the demonstration is quick and reliable.")
+    st.subheader("Enter one network connection")
+    st.write("Type the connection measurements below, then ask the model whether the pattern looks normal or unusual.")
+    connection = empty_connection()
 
-    selected_preset = st.selectbox(
-        "Choose a connection example",
-        list(PRESETS),
-        help="The first two choices use realistic example values from the KDD-style data.",
-    )
-    connection = PRESETS[selected_preset]()
-
-    if selected_preset == "Normal web browsing":
-        st.markdown(
-            """<div class="demo-guide"><strong>What this example represents:</strong>
-            a short, successful website connection. TCP + HTTP + SF, 181 bytes sent,
-            5,450 bytes returned, and only 8 recent similar connections.</div>""",
-            unsafe_allow_html=True,
+    with st.expander("Need values for the presentation? Open this example"):
+        st.code(
+            "Normal example\nProtocol: tcp | Service: http | Flag: SF\n"
+            "Duration: 0 | Bytes sent: 181 | Bytes returned: 5450\n"
+            "Successful login: 1 | Recent destination connections: 8 | "
+            "Recent service connections: 8"
         )
-    elif selected_preset == "Suspicious high-volume traffic":
-        st.markdown(
-            """<div class="demo-guide"><strong>What this example represents:</strong>
-            repeated ICMP traffic. The recent connection counts reach 511 and the
-            destination-host counts reach 255, making the pattern difficult for the
-            autoencoder to reconstruct.</div>""",
-            unsafe_allow_html=True,
-        )
-
-    with st.expander("Presenter cheat sheet - exact values"):
-        if selected_preset == "Normal web browsing":
-            st.code(
-                "Protocol: tcp\nService: http\nFlag: SF\nDuration: 0\n"
-                "Bytes sent: 181\nBytes returned: 5450\nSuccessful login: 1\n"
-                "Recent destination connections: 8\nRecent service connections: 8"
-            )
-        elif selected_preset == "Suspicious high-volume traffic":
-            st.code(
-                "Protocol: icmp\nService: ecr_i\nFlag: SF\nDuration: 0\n"
-                "Bytes sent: 1032\nBytes returned: 0\nSuccessful login: 0\n"
-                "Recent destination connections: 511\nRecent service connections: 511\n"
-                "Destination host count: 255\nDestination host service count: 255"
-            )
-        else:
-            st.write("Enter your own values. Unchanged research measurements remain zero.")
-
-    if selected_preset == "Normal web browsing":
-        st.info("A visitor opens a web page, sends a small request, and receives a normal-sized response.")
-    elif selected_preset == "Suspicious high-volume traffic":
-        st.warning("One source rapidly repeats similar ICMP traffic—a pattern associated with flooding activity in this dataset.")
-    else:
-        st.info("Edit the common fields below. The remaining research fields are available under Advanced details.")
 
     st.markdown("#### Step 1 - Describe the connection")
     options = categorical_options()
@@ -214,7 +139,6 @@ with detector_tab:
             column.replace("_", " ").title(),
             values,
             index=values.index(current) if current in values else 0,
-            disabled=selected_preset != "Create a custom connection",
             help={
                 "protocol_type": "The communication method, such as TCP, UDP, or ICMP.",
                 "service": "The destination service, such as a website (HTTP) or email (SMTP).",
@@ -230,7 +154,6 @@ with detector_tab:
             FRIENDLY_LABELS[column],
             min_value=0.0,
             value=float(connection[column]),
-            disabled=selected_preset != "Create a custom connection",
             help="This value is one of the measurements used by the trained model.",
         )
 
@@ -243,7 +166,6 @@ with detector_tab:
                 column.replace("_", " ").title(),
                 min_value=0.0,
                 value=float(connection[column]),
-                disabled=selected_preset != "Create a custom connection",
                 key=f"advanced_{column}",
             )
 
@@ -274,47 +196,6 @@ with detector_tab:
         result_columns[2].metric("Warning threshold", f"{result['threshold']:.6f}")
         st.progress(min(float(ratio) / 4.0, 1.0), text=f"The score is {ratio:.2f}× the warning threshold")
         st.caption("Higher difference score = the connection was harder for the autoencoder to reconstruct.")
-
-with batch_tab:
-    st.subheader("Check many connections from a CSV file")
-    st.write("Each row should describe one network connection. Download the example first to see the expected format.")
-
-    example_frame = pd.DataFrame([normal_web_example(), suspicious_example()])
-    st.download_button(
-        "Download example CSV",
-        example_frame.to_csv(index=False).encode("utf-8"),
-        file_name="network_connections_example.csv",
-        mime="text/csv",
-    )
-    uploaded = st.file_uploader("Upload connection CSV", type=["csv"])
-    with st.expander("Show required columns"):
-        st.code(", ".join(expected_columns()))
-
-    if uploaded is not None:
-        try:
-            uploaded_frame = pd.read_csv(uploaded)
-            batch_results = predict_connections(uploaded_frame)
-            combined = pd.concat(
-                [uploaded_frame.reset_index(drop=True), batch_results.reset_index(drop=True)],
-                axis=1,
-            )
-            attacks = int((batch_results["prediction"] == "ATTACK").sum())
-            summary_columns = st.columns(3)
-            summary_columns[0].metric("Connections checked", len(batch_results))
-            summary_columns[1].metric("Needs investigation", attacks)
-            summary_columns[2].metric("Looks normal", len(batch_results) - attacks)
-            st.dataframe(
-                combined[["prediction", "anomaly_score", "threshold", "score_ratio"]],
-                use_container_width=True,
-            )
-            st.download_button(
-                "Download full results",
-                combined.to_csv(index=False).encode("utf-8"),
-                file_name="intrusion_predictions.csv",
-                mime="text/csv",
-            )
-        except Exception as exc:
-            st.error(f"The CSV could not be analyzed: {exc}")
 
 with learn_tab:
     st.subheader("What did we build?")
