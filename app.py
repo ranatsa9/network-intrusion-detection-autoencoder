@@ -20,33 +20,33 @@ st.set_page_config(
 st.markdown(
     """
 <style>
-    :root {--navy:#071044; --coral:#ff5364; --teal:#1ea7a8; --cream:#fff8f5;}
+    :root {--navy:#071044; --coral:#ff5364; --teal:#159c9e; --cream:#eee3df;}
     .stApp {background: var(--cream); color: var(--navy);}
     .block-container {max-width: 1180px; padding-top: 2rem; padding-bottom: 4rem;}
     .hero {
-        padding: 2.2rem; border-radius: 24px; color: var(--navy);
-        background: linear-gradient(135deg, #fff 0%, #fff1ee 68%, #dff7f5 100%);
-        border: 1px solid #ffd6d9; box-shadow: 0 18px 50px rgba(7, 16, 68, .08); margin-bottom: 1.5rem;
+        padding: 2.5rem 2.4rem; border-radius: 26px; color: white;
+        background: linear-gradient(130deg, #071044 0%, #111d5d 70%, #143b67 100%);
+        border: 1px solid #26346f; box-shadow: 0 20px 48px rgba(7,16,68,.24); margin-bottom: 1.7rem;
         position: relative; overflow: hidden;
     }
     .hero > *:not(.shape) {position:relative; z-index:2;}
     .shape {position:absolute; z-index:1; opacity:.85; pointer-events:none;}
-    .shape-circle {width:150px; height:150px; border-radius:50%; background:#ffd9dd; right:65px; top:-45px;}
-    .shape-ring {width:90px; height:90px; border:14px solid #28aaa9; border-radius:50%; right:20px; bottom:-38px; opacity:.35;}
+    .shape-circle {width:170px; height:170px; border-radius:50%; background:#ff5364; right:65px; top:-62px; opacity:.75;}
+    .shape-ring {width:105px; height:105px; border:15px solid #28c4c0; border-radius:50%; right:18px; bottom:-48px; opacity:.55;}
     .shape-dots {right:185px; bottom:15px; color:#ff5364; font-size:32px; letter-spacing:8px; opacity:.5;}
     .hero h1 {font-size: 2.45rem; margin: 0 0 .55rem 0;}
     .hero p {font-size: 1.08rem; max-width: 760px; margin: 0; opacity: .92;}
-    .hero .accent {color:var(--coral);}
-    .eyebrow {font-weight: 700; letter-spacing: .12em; font-size: .76rem; color:var(--teal);}
+    .hero .accent {color:#ff6b78;}
+    .eyebrow {font-weight: 700; letter-spacing: .12em; font-size:.76rem; color:#50d4d0;}
     .process {display:grid; grid-template-columns:1fr 70px 1fr 70px 1fr; align-items:center; margin:1.6rem 0 1.9rem;}
-    .process-card {position:relative; min-height:150px; padding:1.35rem 1.25rem 1.15rem 4.8rem; background:#fff; border:1px solid #f2dfe0; border-radius:22px; box-shadow:0 12px 28px rgba(7,16,68,.07);}
-    .process-number {position:absolute; left:1.15rem; top:1.2rem; width:48px; height:48px; display:grid; place-items:center; border-radius:15px; background:var(--coral); color:#fff; font-weight:800; font-size:1.05rem; box-shadow:0 8px 16px rgba(255,83,100,.25);}
+    .process-card {position:relative; min-height:168px; padding:1.3rem 1.35rem; background:#faf3f0; border:1px solid #d6c5c5; border-radius:22px; box-shadow:0 13px 30px rgba(7,16,68,.13);}
+    .process-number {position:static; width:48px; height:48px; display:grid; place-items:center; margin-bottom:.9rem; border-radius:15px; background:var(--coral); color:#fff; font-weight:800; font-size:1.05rem; box-shadow:0 8px 16px rgba(255,83,100,.25);}
     .process-card.teal .process-number {background:var(--teal); box-shadow:0 8px 16px rgba(30,167,168,.22);}
     .process-card h4 {margin:.1rem 0 .45rem; color:var(--navy); font-size:1.08rem;}
     .process-card p {margin:0; color:#4e5877; line-height:1.55; font-size:.92rem;}
     .process-arrow {height:2px; background:repeating-linear-gradient(90deg,var(--coral) 0 8px,transparent 8px 14px); position:relative; margin:0 12px;}
     .process-arrow:after {content:'›'; position:absolute; right:-3px; top:-17px; color:var(--coral); font-size:29px; font-weight:700;}
-    .section-step {display:flex; align-items:center; gap:.85rem; margin:1.7rem 0 .8rem; padding:.7rem .9rem; background:linear-gradient(90deg,#fff 0%,rgba(255,255,255,.25) 100%); border-left:4px solid var(--coral); border-radius:12px;}
+    .section-step {display:flex; align-items:center; gap:.85rem; margin:1.7rem 0 .8rem; padding:.75rem .95rem; background:linear-gradient(90deg,#f9eeeb 0%,rgba(249,238,235,.45) 100%); border:1px solid #d7c4c2; border-left:5px solid var(--coral); border-radius:12px; box-shadow:0 6px 18px rgba(7,16,68,.06);}
     .section-step span {width:34px; height:34px; display:grid; place-items:center; border-radius:10px; background:var(--navy); color:#fff; font-size:.78rem; font-weight:800;}
     .section-step strong {color:var(--navy); font-size:1.05rem;}
     div.stButton > button {border-radius:14px; min-height:3.1rem; font-weight:750; background:var(--coral); border-color:var(--coral);}
@@ -56,7 +56,9 @@ st.markdown(
     .result-normal {background:#ecfdf5; border:1px solid #a7f3d0; padding:1.3rem; border-radius:18px;}
     .result-attack {background:#fff7ed; border:1px solid #fed7aa; padding:1.3rem; border-radius:18px;}
     .small-note {color:#475569; font-size:.9rem;}
-    [data-testid="stMetric"] {background:white; border:1px solid #e2e8f0; padding:1rem; border-radius:16px;}
+    [data-testid="stMetric"] {background:#faf3f0; border:1px solid #d6c5c5; padding:1rem; border-radius:16px;}
+    [data-testid="stTabs"] [role="tablist"] {border-bottom:1px solid #cdbbbb;}
+    [data-testid="stTabs"] button[aria-selected="true"] {color:var(--coral);}
     @media(max-width:800px){.process{grid-template-columns:1fr; gap:12px}.process-arrow{width:2px;height:25px;margin:auto;background:repeating-linear-gradient(180deg,var(--coral) 0 8px,transparent 8px 14px)}.process-arrow:after{content:'⌄';right:-8px;top:8px}.process-card{min-height:auto}}
 </style>
 """,
@@ -128,14 +130,6 @@ with detector_tab:
     st.subheader("Enter one network connection")
     st.write("Type the connection measurements below, then ask the model whether the pattern looks normal or unusual.")
     connection = empty_connection()
-
-    with st.expander("Need values for the presentation? Open this example"):
-        st.code(
-            "Normal example\nProtocol: tcp | Service: http | Flag: SF\n"
-            "Duration: 0 | Bytes sent: 181 | Bytes returned: 5450\n"
-            "Successful login: 1 | Recent destination connections: 8 | "
-            "Recent service connections: 8"
-        )
 
     st.markdown('<div class="section-step"><span>01</span><strong>Choose the connection type</strong></div>', unsafe_allow_html=True)
     options = categorical_options()
