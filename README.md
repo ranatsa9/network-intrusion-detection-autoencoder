@@ -210,6 +210,19 @@ error ≤ threshold  →  NORMAL
 
 ## Usage
 
+### Web app
+
+Run the Streamlit deployment locally:
+
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+The app supports a single-connection form and batch CSV inference. For free
+hosting, connect this repository to Streamlit Community Cloud and set the main
+file path to `app.py`.
+
 ### Install
 
 ```bash
