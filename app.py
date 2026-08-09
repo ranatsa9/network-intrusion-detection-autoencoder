@@ -78,8 +78,9 @@ st.markdown(
     div.stButton > button:hover {background:linear-gradient(110deg,#ff6070,#ed4769); border-color:white; transform:translateY(-2px); box-shadow:0 15px 30px rgba(190,46,70,.30);}
     .demo-guide {background:white; border-left:5px solid var(--teal); border-radius:14px; padding:1rem 1.2rem;}
     .demo-guide strong {color:var(--coral);}
-    .result-normal {background:#ecfdf5; border:1px solid #a7f3d0; padding:1.3rem; border-radius:18px;}
-    .result-attack {background:#fff7ed; border:1px solid #fed7aa; padding:1.3rem; border-radius:18px;}
+    .result-normal {background:rgba(5,55,52,.82); color:#f0fdfa; border:1px solid #36d3b5; padding:1.3rem; border-radius:18px; backdrop-filter:blur(20px); box-shadow:0 14px 32px rgba(0,0,0,.22);}
+    .result-attack {background:rgba(72,18,35,.86); color:#fff1f2; border:1px solid #fb7185; padding:1.3rem; border-radius:18px; backdrop-filter:blur(20px); box-shadow:0 14px 32px rgba(0,0,0,.22);}
+    .result-normal h3,.result-normal p,.result-attack h3,.result-attack p {color:inherit!important;}
     .small-note {color:#475569; font-size:.9rem;}
     [data-testid="stMetric"] {background:rgba(9,24,49,.56); border:1px solid rgba(132,226,223,.28); padding:1rem; border-radius:14px; backdrop-filter:blur(22px) saturate(125%); -webkit-backdrop-filter:blur(22px) saturate(125%);}
     [data-testid="stTabs"] [role="tablist"] {border-bottom:1px solid #cdbbbb;}
@@ -128,7 +129,16 @@ except Exception as exc:
 
 def empty_connection() -> dict[str, object]:
     row: dict[str, object] = {column: 0.0 for column in metadata["num_cols"]}
-    row.update(protocol_type="tcp", service="http", flag="SF")
+    row.update(
+        protocol_type="tcp",
+        service="http",
+        flag="SF",
+        same_srv_rate=1.0,
+        dst_host_count=9.0,
+        dst_host_srv_count=9.0,
+        dst_host_same_srv_rate=1.0,
+        dst_host_same_src_port_rate=0.11,
+    )
     return row
 
 
@@ -203,7 +213,8 @@ with detector_tab:
   Login: 0 &nbsp;|&nbsp; Destination count: 511 &nbsp;|&nbsp; Service count: 511
   </div>
 </div>
-<small>For the suspicious example, open the optional research measurements and set:
+<small>The hidden fields begin with a normal baseline, so the normal example works using the visible fields.
+For the suspicious example, turn on Advanced measurements and set:
 Same Service Rate = 1, Destination Host Count = 255, Destination Host Service Count = 255,
 Destination Host Same Service Rate = 1, and Destination Host Same Source Port Rate = 1.</small>
 """,
