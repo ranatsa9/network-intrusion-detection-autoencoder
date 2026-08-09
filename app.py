@@ -24,10 +24,13 @@ st.markdown(
     .stApp {
         color:var(--navy);
         background:
+          linear-gradient(rgba(7,16,68,.045) 1px,transparent 1px),
+          linear-gradient(90deg,rgba(7,16,68,.045) 1px,transparent 1px),
           radial-gradient(circle at 10% 8%, rgba(33,170,172,.34), transparent 30%),
           radial-gradient(circle at 88% 18%, rgba(243,79,97,.25), transparent 27%),
           radial-gradient(circle at 52% 92%, rgba(54,72,139,.28), transparent 35%),
           linear-gradient(135deg,#aeb9c8 0%,#d3c7ca 52%,#aebfc2 100%);
+        background-size:32px 32px,32px 32px,auto,auto,auto,auto;
         background-attachment:fixed;
     }
     [data-testid="stHeader"] {background:rgba(205,210,220,.72); backdrop-filter:blur(16px);}
@@ -51,6 +54,13 @@ st.markdown(
     .hero p {font-size: 1.08rem; max-width: 760px; margin: 0; opacity: .92;}
     .hero .accent {color:#ff6b78;}
     .eyebrow {font-weight: 700; letter-spacing: .12em; font-size:.76rem; color:#50d4d0;}
+    .network-map {position:absolute; right:1.5rem; top:.2rem; width:38%; height:100%; z-index:1; opacity:.62;}
+    .network-map line {stroke:#53d7d2; stroke-width:1.4; stroke-dasharray:5 6; animation:data-line 5s linear infinite;}
+    .network-map circle {fill:#53d7d2; transform-box:fill-box; transform-origin:center; animation:node-pulse 2.8s ease-in-out infinite;}
+    .network-map .alert-node {fill:#ff6070; animation-delay:.8s;}
+    .network-map .soft-node {fill:#fff; opacity:.7; animation-delay:1.4s;}
+    .live-pill {display:inline-flex; align-items:center; gap:.5rem; margin-top:1rem; padding:.42rem .75rem; border:1px solid rgba(83,215,210,.4); border-radius:999px; background:rgba(83,215,210,.1); color:#a7f3f0; font-size:.76rem; font-weight:700; letter-spacing:.06em;}
+    .live-dot {width:8px;height:8px;border-radius:50%;background:#53d7d2;box-shadow:0 0 0 0 rgba(83,215,210,.6);animation:signal 2s infinite;}
     .process {display:grid; grid-template-columns:1fr 70px 1fr 70px 1fr; align-items:center; margin:1.6rem 0 1.9rem;}
     .process-card {position:relative; min-height:168px; padding:1.3rem 1.35rem; background:rgba(255,255,255,.48); border:1px solid rgba(255,255,255,.68); border-radius:20px; box-shadow:0 12px 30px rgba(7,16,68,.12); backdrop-filter:blur(18px); transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease;}
     .process-card:hover {transform:translateY(-6px); border-color:rgba(255,255,255,.95); box-shadow:0 20px 42px rgba(7,16,68,.18);}
@@ -86,8 +96,11 @@ st.markdown(
     @keyframes float-two {0%,100%{transform:translate(0,0) rotate(0)}50%{transform:translate(-10px,-9px) rotate(8deg)}}
     @keyframes pulse {0%,100%{opacity:.35;transform:scale(.96)}50%{opacity:.75;transform:scale(1.05)}}
     @keyframes flow {to{background-position:-200% 0}}
-    @media(prefers-reduced-motion:reduce){.shape,.process-arrow,.process-card,div.stButton>button{animation:none!important;transition:none!important}}
-    @media(max-width:800px){.process{grid-template-columns:1fr;gap:12px}.process-arrow{width:3px;height:28px;margin:auto}.process-arrow:after{right:-4px;top:18px;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid var(--coral);border-bottom:0}.process-card{min-height:auto}.sample-box{grid-template-columns:1fr}}
+    @keyframes data-line {to{stroke-dashoffset:-44}}
+    @keyframes node-pulse {0%,100%{transform:scale(.8);opacity:.55}50%{transform:scale(1.3);opacity:1}}
+    @keyframes signal {0%{box-shadow:0 0 0 0 rgba(83,215,210,.65)}70%{box-shadow:0 0 0 9px rgba(83,215,210,0)}100%{box-shadow:0 0 0 0 rgba(83,215,210,0)}}
+    @media(prefers-reduced-motion:reduce){.shape,.network-map *,.live-dot,.process-arrow,.process-card,div.stButton>button{animation:none!important;transition:none!important}}
+    @media(max-width:800px){.network-map{opacity:.18;width:75%;right:-20%}.process{grid-template-columns:1fr;gap:12px}.process-arrow{width:3px;height:28px;margin:auto}.process-arrow:after{right:-4px;top:18px;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid var(--coral);border-bottom:0}.process-card{min-height:auto}.sample-box{grid-template-columns:1fr}}
 </style>
 """,
     unsafe_allow_html=True,
@@ -125,14 +138,23 @@ FRIENDLY_LABELS = {
 st.markdown(
     """
 <section class="hero">
-  <div class="shape shape-circle"></div>
-  <div class="shape shape-ring"></div>
-  <div class="shape shape-dots">•••</div>
+  <svg class="network-map" viewBox="0 0 420 220" aria-hidden="true">
+    <line x1="40" y1="70" x2="120" y2="35"/><line x1="40" y1="70" x2="105" y2="135"/>
+    <line x1="120" y1="35" x2="205" y2="82"/><line x1="105" y1="135" x2="205" y2="82"/>
+    <line x1="105" y1="135" x2="205" y2="175"/><line x1="205" y1="82" x2="300" y2="45"/>
+    <line x1="205" y1="82" x2="290" y2="140"/><line x1="205" y1="175" x2="290" y2="140"/>
+    <line x1="300" y1="45" x2="375" y2="105"/><line x1="290" y1="140" x2="375" y2="105"/>
+    <circle cx="40" cy="70" r="7"/><circle class="soft-node" cx="120" cy="35" r="6"/>
+    <circle cx="105" cy="135" r="8"/><circle class="soft-node" cx="205" cy="82" r="9"/>
+    <circle cx="205" cy="175" r="6"/><circle cx="300" cy="45" r="7"/>
+    <circle cx="290" cy="140" r="8"/><circle class="alert-node" cx="375" cy="105" r="11"/>
+  </svg>
   <div class="eyebrow">ANOMALY DETECTION SYSTEM</div>
   <h1>Learning <span class="accent">normal</span> to detect the abnormal.</h1>
   <p>A beginner-friendly demonstration of network intrusion detection with a
   deep autoencoder. Enter a connection, let the model reconstruct it, and compare
   its reconstruction error with the warning threshold.</p>
+  <div class="live-pill"><span class="live-dot"></span> NETWORK ANALYSIS READY</div>
 </section>
 """,
     unsafe_allow_html=True,
