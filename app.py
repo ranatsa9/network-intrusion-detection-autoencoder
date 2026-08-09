@@ -36,7 +36,7 @@ st.markdown(
     .hero {
         padding: 2.5rem 2.4rem; border-radius: 26px; color: white;
         background:#10184c;
-        border: 1px solid #26346f; box-shadow:none; margin-bottom:1.7rem;
+        border:1px solid rgba(255,255,255,.16); box-shadow:0 22px 55px rgba(7,16,68,.22); margin-bottom:1.7rem;
         position: relative; overflow: hidden;
     }
     .hero > *:not(.shape) {position:relative; z-index:2;}
@@ -44,23 +44,27 @@ st.markdown(
     .shape-circle {width:170px; height:170px; border-radius:50%; background:#ff5364; right:65px; top:-62px; opacity:.75;}
     .shape-ring {width:105px; height:105px; border:15px solid #28c4c0; border-radius:50%; right:18px; bottom:-48px; opacity:.55;}
     .shape-dots {right:185px; bottom:15px; color:#ff5364; font-size:32px; letter-spacing:8px; opacity:.5;}
+    .shape-circle {animation:float-one 7s ease-in-out infinite;}
+    .shape-ring {animation:float-two 8s ease-in-out infinite;}
+    .shape-dots {animation:pulse 4s ease-in-out infinite;}
     .hero h1 {font-size: 2.45rem; margin: 0 0 .55rem 0;}
     .hero p {font-size: 1.08rem; max-width: 760px; margin: 0; opacity: .92;}
     .hero .accent {color:#ff6b78;}
     .eyebrow {font-weight: 700; letter-spacing: .12em; font-size:.76rem; color:#50d4d0;}
     .process {display:grid; grid-template-columns:1fr 70px 1fr 70px 1fr; align-items:center; margin:1.6rem 0 1.9rem;}
-    .process-card {position:relative; min-height:168px; padding:1.3rem 1.35rem; background:rgba(255,255,255,.48); border:1px solid rgba(255,255,255,.68); border-radius:20px; box-shadow:0 12px 30px rgba(7,16,68,.12); backdrop-filter:blur(18px);}
+    .process-card {position:relative; min-height:168px; padding:1.3rem 1.35rem; background:rgba(255,255,255,.48); border:1px solid rgba(255,255,255,.68); border-radius:20px; box-shadow:0 12px 30px rgba(7,16,68,.12); backdrop-filter:blur(18px); transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease;}
+    .process-card:hover {transform:translateY(-6px); border-color:rgba(255,255,255,.95); box-shadow:0 20px 42px rgba(7,16,68,.18);}
     .process-number {position:static; width:48px; height:48px; display:grid; place-items:center; margin-bottom:.9rem; border-radius:12px; background:var(--coral); color:#fff; font-weight:800; font-size:1.05rem; box-shadow:none;}
     .process-card.teal .process-number {background:var(--teal); box-shadow:none;}
     .process-card h4 {margin:.1rem 0 .45rem; color:var(--navy); font-size:1.08rem;}
     .process-card p {margin:0; color:#4e5877; line-height:1.55; font-size:.92rem;}
-    .process-arrow {height:3px; background:var(--coral); position:relative; margin:0 14px;}
+    .process-arrow {height:3px; background:linear-gradient(90deg,var(--teal),var(--coral),var(--teal)); background-size:200% 100%; position:relative; margin:0 14px; animation:flow 2.8s linear infinite;}
     .process-arrow:after {content:''; position:absolute; right:-1px; top:-6px; width:0; height:0; border-top:7px solid transparent; border-bottom:7px solid transparent; border-left:11px solid var(--coral);}
     .section-step {display:flex; align-items:center; gap:.85rem; margin:1.7rem 0 .8rem; padding:.75rem .95rem; background:rgba(255,255,255,.45); border:1px solid rgba(255,255,255,.7); border-left:5px solid var(--coral); border-radius:12px; box-shadow:0 8px 22px rgba(7,16,68,.08); backdrop-filter:blur(14px);}
     .section-step span {width:34px; height:34px; display:grid; place-items:center; border-radius:10px; background:var(--navy); color:#fff; font-size:.78rem; font-weight:800;}
     .section-step strong {color:var(--navy); font-size:1.05rem;}
-    div.stButton > button {border-radius:14px; min-height:3.1rem; font-weight:750; background:var(--coral); border-color:var(--coral);}
-    div.stButton > button:hover {background:#e94456; border-color:#e94456;}
+    div.stButton > button {border-radius:14px; min-height:3.25rem; font-weight:750; background:linear-gradient(110deg,#f34f61,#e53e62); border:1px solid rgba(255,255,255,.45); box-shadow:0 10px 25px rgba(190,46,70,.22); transition:transform .2s ease,box-shadow .2s ease;}
+    div.stButton > button:hover {background:linear-gradient(110deg,#ff6070,#ed4769); border-color:white; transform:translateY(-2px); box-shadow:0 15px 30px rgba(190,46,70,.30);}
     .demo-guide {background:white; border-left:5px solid var(--teal); border-radius:14px; padding:1rem 1.2rem;}
     .demo-guide strong {color:var(--coral);}
     .result-normal {background:#ecfdf5; border:1px solid #a7f3d0; padding:1.3rem; border-radius:18px;}
@@ -71,11 +75,18 @@ st.markdown(
     [data-testid="stTabs"] button[aria-selected="true"] {color:var(--coral);}
     [data-testid="stExpander"] {background:rgba(255,255,255,.48); border:1px solid rgba(255,255,255,.75); border-radius:16px; box-shadow:0 10px 26px rgba(7,16,68,.09); backdrop-filter:blur(16px); overflow:hidden;}
     [data-testid="stExpander"] summary {font-weight:700; color:var(--navy); padding:.25rem .35rem;}
+    [data-testid="stCheckbox"] {background:rgba(7,16,68,.82); border:1px solid rgba(255,255,255,.3); border-radius:15px; padding:.8rem 1rem; margin-top:.8rem;}
+    [data-testid="stCheckbox"] label, [data-testid="stCheckbox"] p {color:white !important; font-weight:700;}
     .sample-box {display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:.35rem 0 .65rem;}
     .sample {background:rgba(7,16,68,.88); color:#f8fafc; border-radius:13px; padding:1rem 1.1rem; line-height:1.65;}
     .sample.attack {background:rgba(123,36,55,.9);}
     .sample strong {display:block; color:#52d4d0; margin-bottom:.25rem;}
     .sample.attack strong {color:#ffc1c8;}
+    @keyframes float-one {0%,100%{transform:translate(0,0)}50%{transform:translate(-12px,12px)}}
+    @keyframes float-two {0%,100%{transform:translate(0,0) rotate(0)}50%{transform:translate(-10px,-9px) rotate(8deg)}}
+    @keyframes pulse {0%,100%{opacity:.35;transform:scale(.96)}50%{opacity:.75;transform:scale(1.05)}}
+    @keyframes flow {to{background-position:-200% 0}}
+    @media(prefers-reduced-motion:reduce){.shape,.process-arrow,.process-card,div.stButton>button{animation:none!important;transition:none!important}}
     @media(max-width:800px){.process{grid-template-columns:1fr;gap:12px}.process-arrow{width:3px;height:28px;margin:auto}.process-arrow:after{right:-4px;top:18px;border-left:6px solid transparent;border-right:6px solid transparent;border-top:10px solid var(--coral);border-bottom:0}.process-card{min-height:auto}.sample-box{grid-template-columns:1fr}}
 </style>
 """,
@@ -198,7 +209,12 @@ Destination Host Same Service Rate = 1, and Destination Host Same Source Port Ra
             help="This value is one of the measurements used by the trained model.",
         )
 
-    with st.expander("Optional: see all research measurements"):
+    show_advanced = st.toggle(
+        "Advanced measurements",
+        value=False,
+        help="Turn this on only when you want to edit the full research feature set.",
+    )
+    if show_advanced:
         st.caption("Most beginners can leave these values unchanged.")
         advanced_fields = [field for field in metadata["num_cols"] if field not in common_fields]
         advanced_columns = st.columns(3)
