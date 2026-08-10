@@ -153,50 +153,41 @@ FRIENDLY_LABELS = {
     "srv_count": "Recent connections to the same service",
 }
 
-RATE_FIELDS = {
-    "serror_rate", "srv_serror_rate", "rerror_rate", "srv_rerror_rate",
-    "same_srv_rate", "diff_srv_rate", "srv_diff_host_rate",
-    "dst_host_same_srv_rate", "dst_host_diff_srv_rate",
-    "dst_host_same_src_port_rate", "dst_host_srv_diff_host_rate",
-    "dst_host_serror_rate", "dst_host_srv_serror_rate",
-    "dst_host_rerror_rate", "dst_host_srv_rerror_rate",
-}
-
-BINARY_FIELDS = {"land", "logged_in", "root_shell", "is_guest_login"}
-
-FIELD_RANGES = {
-    "duration": (0, 120), "src_bytes": (0, 10_000), "dst_bytes": (0, 10_000),
-    "wrong_fragment": (0, 3), "urgent": (0, 3), "hot": (0, 10),
-    "num_failed_logins": (0, 5), "num_compromised": (0, 10),
-    "su_attempted": (0, 2), "num_root": (0, 10),
-    "num_file_creations": (0, 10), "num_shells": (0, 5),
-    "num_access_files": (0, 10), "count": (0, 511), "srv_count": (0, 511),
-    "dst_host_count": (0, 255), "dst_host_srv_count": (0, 255),
-}
-
-
-def random_connection(metadata, categorical_values) -> dict[str, object]:
-    """Return one randomized connection using valid domains for every feature."""
-    connection: dict[str, object] = {
-        column: random.choice(categorical_values[column])
-        for column in metadata["cat_cols"]
-    }
-    for column in metadata["num_cols"]:
-        if column in RATE_FIELDS:
-            value = round(random.random(), 2)
-        elif column in BINARY_FIELDS:
-            value = random.randint(0, 1)
-        else:
-            low, high = FIELD_RANGES.get(column, (0, 10))
-            value = random.randint(low, high)
-        connection[column] = float(value)
+def profile_connection(kind: str) -> dict[str, object]:
+    """Create a coherent normal-web or suspicious-ICMP demonstration profile."""
+    connection: dict[str, object] = {column: 0.0 for column in metadata["num_cols"]}
+    if kind == "normal":
+        recent_count = random.randint(6, 10)
+        host_count = random.randint(7, 11)
+        connection.update(
+            protocol_type="tcp", service="http", flag="SF",
+            duration=0.0, src_bytes=float(random.randint(150, 220)),
+            dst_bytes=float(random.randint(4_500, 6_500)),
+            logged_in=1.0, count=float(recent_count), srv_count=float(recent_count),
+            same_srv_rate=1.0, dst_host_count=float(host_count),
+            dst_host_srv_count=float(host_count), dst_host_same_srv_rate=1.0,
+            dst_host_same_src_port_rate=round(1 / host_count, 2),
+        )
+    else:
+        burst_count = random.randint(450, 511)
+        connection.update(
+            protocol_type="icmp", service="ecr_i", flag="SF", duration=0.0,
+            src_bytes=float(random.randint(900, 1_100)), dst_bytes=0.0,
+            count=float(burst_count), srv_count=float(burst_count), same_srv_rate=1.0,
+            dst_host_count=255.0, dst_host_srv_count=255.0,
+            dst_host_same_srv_rate=1.0, dst_host_same_src_port_rate=1.0,
+        )
     return connection
 
 
-def set_connection_widgets(values: dict[str, object]) -> None:
-    """Put a complete connection into the Streamlit widget state."""
+def randomize_connection() -> None:
+    """Alternate realistic normal and suspicious examples on successive clicks."""
+    last_kind = st.session_state.get("generated_profile", "suspicious")
+    kind = "normal" if last_kind == "suspicious" else "suspicious"
+    values = profile_connection(kind)
     for column, value in values.items():
         st.session_state[f"connection_{column}"] = value
+    st.session_state["generated_profile"] = kind
 
 
 st.markdown(
@@ -251,15 +242,21 @@ with detector_tab:
     randomize_column, randomize_note = st.columns([1, 2])
     randomize_column.button(
         "🎲 Randomize all values",
-        on_click=set_connection_widgets,
-        args=(random_connection(metadata, options),),
+        on_click=randomize_connection,
         use_container_width=True,
         help="Generate a new valid test connection, including the advanced measurements.",
     )
-    randomize_note.caption(
-        "Don’t know the networking values? Generate a complete test case, then analyze it. "
-        "Click again for a different connection."
-    )
+    generated_profile = st.session_state.get("generated_profile")
+    if generated_profile:
+        next_profile = "suspicious" if generated_profile == "normal" else "normal"
+        randomize_note.caption(
+            f"Generated a **{generated_profile}** example. The next click generates a "
+            f"**{next_profile}** example."
+        )
+    else:
+        randomize_note.caption(
+            "Generates a normal example first, then alternates with a suspicious example."
+        )
     connection: dict[str, object] = {}
 
     with st.expander("Presentation example values", expanded=False):
