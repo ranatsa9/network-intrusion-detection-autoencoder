@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import random
+
 import streamlit as st
 
 from src.inference import (
@@ -9,7 +11,6 @@ from src.inference import (
     load_artifacts,
     predict_connection,
 )
-from src.sample_data import random_connection
 
 
 st.set_page_config(
@@ -151,6 +152,45 @@ FRIENDLY_LABELS = {
     "count": "Recent connections to the same destination",
     "srv_count": "Recent connections to the same service",
 }
+
+RATE_FIELDS = {
+    "serror_rate", "srv_serror_rate", "rerror_rate", "srv_rerror_rate",
+    "same_srv_rate", "diff_srv_rate", "srv_diff_host_rate",
+    "dst_host_same_srv_rate", "dst_host_diff_srv_rate",
+    "dst_host_same_src_port_rate", "dst_host_srv_diff_host_rate",
+    "dst_host_serror_rate", "dst_host_srv_serror_rate",
+    "dst_host_rerror_rate", "dst_host_srv_rerror_rate",
+}
+
+BINARY_FIELDS = {"land", "logged_in", "root_shell", "is_guest_login"}
+
+FIELD_RANGES = {
+    "duration": (0, 120), "src_bytes": (0, 10_000), "dst_bytes": (0, 10_000),
+    "wrong_fragment": (0, 3), "urgent": (0, 3), "hot": (0, 10),
+    "num_failed_logins": (0, 5), "num_compromised": (0, 10),
+    "su_attempted": (0, 2), "num_root": (0, 10),
+    "num_file_creations": (0, 10), "num_shells": (0, 5),
+    "num_access_files": (0, 10), "count": (0, 511), "srv_count": (0, 511),
+    "dst_host_count": (0, 255), "dst_host_srv_count": (0, 255),
+}
+
+
+def random_connection(metadata, categorical_values) -> dict[str, object]:
+    """Return one randomized connection using valid domains for every feature."""
+    connection: dict[str, object] = {
+        column: random.choice(categorical_values[column])
+        for column in metadata["cat_cols"]
+    }
+    for column in metadata["num_cols"]:
+        if column in RATE_FIELDS:
+            value = round(random.random(), 2)
+        elif column in BINARY_FIELDS:
+            value = random.randint(0, 1)
+        else:
+            low, high = FIELD_RANGES.get(column, (0, 10))
+            value = random.randint(low, high)
+        connection[column] = float(value)
+    return connection
 
 
 def set_connection_widgets(values: dict[str, object]) -> None:
