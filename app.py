@@ -9,6 +9,7 @@ from src.inference import (
     load_artifacts,
     predict_connection,
 )
+from src.sample_data import random_connection
 
 
 st.set_page_config(
@@ -152,6 +153,12 @@ FRIENDLY_LABELS = {
 }
 
 
+def set_connection_widgets(values: dict[str, object]) -> None:
+    """Put a complete connection into the Streamlit widget state."""
+    for column, value in values.items():
+        st.session_state[f"connection_{column}"] = value
+
+
 st.markdown(
     """
 <section class="hero">
@@ -196,7 +203,24 @@ detector_tab, learn_tab = st.tabs(["Try the detector", "Learn how it works"])
 with detector_tab:
     st.subheader("Enter one network connection")
     st.write("Type the connection measurements below, then ask the model whether the pattern looks normal or unusual.")
-    connection = empty_connection()
+    options = categorical_options()
+    defaults = empty_connection()
+    for column, value in defaults.items():
+        st.session_state.setdefault(f"connection_{column}", value)
+
+    randomize_column, randomize_note = st.columns([1, 2])
+    randomize_column.button(
+        "🎲 Randomize all values",
+        on_click=set_connection_widgets,
+        args=(random_connection(metadata, options),),
+        use_container_width=True,
+        help="Generate a new valid test connection, including the advanced measurements.",
+    )
+    randomize_note.caption(
+        "Don’t know the networking values? Generate a complete test case, then analyze it. "
+        "Click again for a different connection."
+    )
+    connection: dict[str, object] = {}
 
     with st.expander("Presentation example values", expanded=False):
         st.markdown(
@@ -222,15 +246,13 @@ Destination Host Same Service Rate = 1, and Destination Host Same Source Port Ra
         )
 
     st.markdown('<div class="section-step"><span>01</span><strong>Choose the connection type</strong></div>', unsafe_allow_html=True)
-    options = categorical_options()
     type_columns = st.columns(3)
     for position, column in enumerate(metadata["cat_cols"]):
         values = options[column]
-        current = str(connection[column])
         connection[column] = type_columns[position].selectbox(
             column.replace("_", " ").title(),
             values,
-            index=values.index(current) if current in values else 0,
+            key=f"connection_{column}",
             help={
                 "protocol_type": "The communication method, such as TCP, UDP, or ICMP.",
                 "service": "The destination service, such as a website (HTTP) or email (SMTP).",
@@ -245,8 +267,8 @@ Destination Host Same Service Rate = 1, and Destination Host Same Source Port Ra
         connection[column] = common_columns[position % 3].number_input(
             FRIENDLY_LABELS[column],
             min_value=0.0,
-            value=float(connection[column]),
             format="%.1f",
+            key=f"connection_{column}",
             help="This value is one of the measurements used by the trained model.",
         )
 
@@ -263,10 +285,12 @@ Destination Host Same Service Rate = 1, and Destination Host Same Source Port Ra
             connection[column] = advanced_columns[position % 3].number_input(
                 column.replace("_", " ").title(),
                 min_value=0.0,
-                value=float(connection[column]),
                 format="%.1f",
-                key=f"advanced_{column}",
+                key=f"connection_{column}",
             )
+
+    for column in metadata["num_cols"]:
+        connection.setdefault(column, st.session_state[f"connection_{column}"])
 
     st.markdown('<div class="section-step"><span>03</span><strong>Run the anomaly detector</strong></div>', unsafe_allow_html=True)
     if st.button("Analyze this connection", type="primary", use_container_width=True):
